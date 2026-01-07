@@ -6,6 +6,7 @@ export default {
     environment: 'node'
   },
   server: {
-    middlewareMode: true
+    middlewareMode: true,
+    hmr: false
   }
 };
