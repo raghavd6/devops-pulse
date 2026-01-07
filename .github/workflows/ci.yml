@@ -39,7 +39,7 @@ jobs:
         if: ${{ hashFiles('frontend/package.json') != '' }}
         working-directory: ./frontend
         run: npx vitest run
-        
+
       # Optional: if your folders are named differently (api/web),
       # keep these two blocks and delete the ones above, or add similarly:
       - name: API install
@@ -70,20 +70,6 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           pip install yamllint cfn-lint
-
-      - name: .yamllint config (optional)
-        run: |
-          cat > .yamllint.yml <<'EOF'
-          extends: default
-          rules:
-            line-length:
-              max: 160
-              level: warning
-            document-start: enable
-            trailing-spaces: enable
-            indentation:
-              indent-sequences: consistent
-          EOF
 
       - name: Validate YAML
         run: yamllint -c .yamllint.yml infra/cloudformation/devops-pulse-ec2.yaml
