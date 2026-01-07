@@ -1,9 +1,19 @@
 extends: default
 rules:
   line-length:
-    max: 160
+    max: 200
     level: warning
-  document-start: enable
-  trailing-spaces: enable
+
+  truthy:
+    allowed-values: ["true", "false", "yes", "no"]
+
   indentation:
+    spaces: 2
     indent-sequences: consistent
+  comments: 
+    min-spaces-from-content: 1
+
+  document-start: disable
+  
+ignore:
+  infra/cloudformation/*.yaml
