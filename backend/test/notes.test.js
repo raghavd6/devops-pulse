@@ -1,8 +1,7 @@
 
-// backend/test/health.test.js
+// backend/test/notes.test.js
 import request from 'supertest';
-
-const { default: app } = await import('../src/index.js'); // app is listening, ok
+import app from '../src/index.js';
 
 test('health endpoint returns ok', async () => {
   const res = await request(app).get('/api/health');

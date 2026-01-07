@@ -1,30 +1,100 @@
-
 name: ci-cd
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
 
 jobs:
   build_test:
+    name: Build & Test (Node)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: npm ci && npm test
-      # Optional: lint frontend (Vitest) and backend (Jest/Supertest) already in your app
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Run BACKEND tests only if backend/package.json exists
+      - name: Backend install
+        if: ${{ hashFiles('backend/package.json') != '' }}
+        working-directory: backend
+        run: npm ci
+      - name: Backend tests
+        if: ${{ hashFiles('backend/package.json') != '' }}
+        working-directory: backend
+        run: npm test
+
+      # Run FRONTEND tests only if frontend/package.json exists
+      - name: Frontend install
+        if: ${{ hashFiles('frontend/package.json') != '' }}
+        working-directory: frontend
+        run: npm ci
+      - name: Frontend tests
+        if: ${{ hashFiles('frontend/package.json') != '' }}
+        working-directory: frontend
+        run: npm run test
+
+      # Optional: if your folders are named differently (api/web),
+      # keep these two blocks and delete the ones above, or add similarly:
+      - name: API install
+        if: ${{ hashFiles('api/package.json') != '' }}
+        working-directory: api
+        run: npm ci
+      - name: API tests
+        if: ${{ hashFiles('api/package.json') != '' }}
+        working-directory: api
+        run: npm test
+
+      - name: Web install
+        if: ${{ hashFiles('web/package.json') != '' }}
+        working-directory: web
+        run: npm ci
+      - name: Web tests
+        if: ${{ hashFiles('web/package.json') != '' }}
+        working-directory: web
+        run: npm run test
 
   validate_iac:
+    name: Validate CloudFormation (YAML + CFN lint)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install cfn-lint and yamllint
+
+      - name: Install Python tools
         run: |
-          pip install cfn-lint==0.85.2 yamllint==1.32.0
-      - name: Validate CloudFormation template
+          python3 -m pip install --upgrade pip
+          pip install yamllint cfn-lint
+
+      - name: .yamllint config (optional)
         run: |
-          yamllint infra/cloudformation/devops-pulse-ec2.yaml
-          cfn-lint infra/cloudformation/devops-pulse-ec2.yaml
-      - name: Render would-be deploy command (dry-run doc)
+          cat > .yamllint.yml <<'EOF'
+          extends: default
+          rules:
+            line-length:
+              max: 160
+              level: warning
+            document-start: enable
+            trailing-spaces: enable
+            indentation:
+              indent-sequences: consistent
+          EOF
+
+      - name: Validate YAML
+        run: yamllint -c .yamllint.yml infra/cloudformation/devops-pulse-ec2.yaml
+
+      - name: Validate CloudFormation
+        run: cfn-lint infra/cloudformation/devops-pulse-ec2.yaml
+
+      # Optional: show the would-be deploy command (good for your video narrative)
+      - name: Render deploy command (dry-run narrative)
         run: |
+          sudo apt-get update && sudo apt-get install -y jq
           echo "aws cloudformation deploy --stack-name devops-pulse --region eu-west-2 \\"
           echo "  --template-file infra/cloudformation/devops-pulse-ec2.yaml \\"
           echo "  --parameter-overrides $(jq -r '.ParameterOverrides | to_entries | map(\"\\(.key)=\\(.value)\") | join(\" \")' infra/cloudformation/parameters.json) \\"

@@ -56,12 +56,17 @@ app.use((err, _req, res, _next) => {
 });
 
 // --- start ---
-async function main() {
-  await initDb(); // don't block the server if DB fails; health reports db:false
-  app.listen(PORT, () => console.log(`API listening on :${PORT}`));
-}
+export default app;
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+// Only start server if not in test mode
+if (import.meta.url === `file://${process.argv[1]}`) {
+  async function main() {
+    await initDb(); // don't block the server if DB fails; health reports db:false
+    app.listen(PORT, () => console.log(`API listening on :${PORT}`));
+  }
+
+  main().catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
+}

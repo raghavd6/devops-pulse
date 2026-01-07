@@ -3,7 +3,9 @@ import adapter from '@sveltejs/adapter-node';
 const config = {
   kit: {
     adapter: adapter(),
-    csrf: { checkOrigin: false }
+    csrf: { 
+      trustedOrigins: ['localhost', '127.0.0.1']
+    }
   }
 };
 
