@@ -1,11 +1,15 @@
-
+---
 AWSTemplateFormatVersion: '2010-09-09'
-Description: DevOps Pulse - EC2 deployment with Docker Compose via UserData
+Description: >
+  DevOps Pulse – EC2 deployment with Docker Compose via UserData.
+  Provisions VPC, subnet, security group, and EC2 instance. UserData installs Docker,
+  clones your repo, and runs docker compose.
 
 Parameters:
   KeyName:
     Type: AWS::EC2::KeyPair::KeyName
-    Description: Name of an existing EC2 KeyPair to enable SSH access
+    Description: >
+      Name of an existing EC2 KeyPair to enable SSH access.
   InstanceType:
     Type: String
     Default: t3.micro
@@ -13,7 +17,7 @@ Parameters:
       - t3.micro
       - t3.small
       - t3.medium
-    Description: EC2 instance type
+    Description: EC2 instance type.
   VpcCidr:
     Type: String
     Default: 10.0.0.0/16
@@ -23,24 +27,26 @@ Parameters:
   RepoUrl:
     Type: String
     Default: https://github.com/your-org/your-devops-pulse-repo
-    Description: Git repository URL containing docker-compose.yml at project root
+    Description: >
+      Git repository URL containing docker-compose.yml at project root.
   Branch:
     Type: String
     Default: main
-    Description: Branch to clone
+    Description: Branch to clone.
   ComposePath:
     Type: String
     Default: docker-compose.yml
-    Description: Relative path to docker-compose file inside the repo
+    Description: >
+      Relative path to docker-compose file inside the repo.
   AppHttpPort:
     Type: Number
     Default: 80
-    Description: Port exposed by frontend service
+    Description: Port exposed by frontend service.
 
 Mappings:
   RegionMap:
     eu-west-2:
-      AMI: ami-0d0b1e0f0e9ae1e95  # Amazon Linux 2 (example; user should override if needed)
+      AMI: ami-0d0b1e0f0e9ae1e95  # Amazon Linux 2 (example; override if needed)
     eu-west-1:
       AMI: ami-0900a5c62e0d6363b
     us-east-1:
@@ -119,7 +125,8 @@ Resources:
     Properties:
       Roles: []
     Metadata:
-      Comment: In Learner Lab, IAM creation may be limited; using empty profile to avoid CAPABILITY_IAM.
+      Comment: >
+        In Learner Lab, IAM creation may be limited; using empty profile to avoid CAPABILITY_IAM.
 
   EC2Instance:
     Type: AWS::EC2::Instance
@@ -139,7 +146,6 @@ Resources:
         systemctl start docker
         curl -fsSL https://get.docker.com | sh || true
         usermod -aG docker ec2-user
-        # Install git and docker compose plugin
         yum install -y git
         mkdir -p /opt/app && chown ec2-user:ec2-user /opt/app
         cd /opt/app
@@ -149,17 +155,21 @@ Resources:
         if docker compose version; then
           docker compose -f ${ComposePath} up -d
         else
-          curl -L "https://github.com/docker/compose/releases/download/v2.6.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          curl -L \
+            "https://github.com/docker/compose/releases/download/v2.6.1/docker-compose-$(uname -s)-$(uname -m)" \
+            -o /usr/local/bin/docker-compose
           chmod +x /usr/local/bin/docker-compose
           docker-compose -f ${ComposePath} up -d
         fi
     Metadata:
-      Comment: UserData clones repo and starts services via docker compose
+      Comment: >
+        UserData clones repo and starts services via docker compose.
 
 Outputs:
   InstancePublicIp:
-    Description: Public IP of the EC2 instance
+    Description: Public IP of the EC2 instance.
     Value: !GetAtt EC2Instance.PublicIp
   HttpUrl:
-    Description: HTTP URL to access frontend
-    Value: !Sub 'http://${EC2Instance.PublicIp}:${AppHttpPort}'
+    Description: HTTP URL to access frontend.
+    Value: !Sub >
+      http://${EC2Instance.PublicIp}:${AppHttpPort}
