@@ -38,7 +38,7 @@ jobs:
       - name: Frontend tests
         if: ${{ hashFiles('frontend/package.json') != '' }}
         working-directory: frontend
-        run: npm run test
+        run: npm test
 
       # Optional: if your folders are named differently (api/web),
       # keep these two blocks and delete the ones above, or add similarly:
