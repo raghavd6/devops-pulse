@@ -6,11 +6,11 @@
   "private": true,
   
 "scripts": {
-  "dev": "vite dev --host 0.0.0.0 --port 3000",
+  "dev": "vite dev --host 0.0.0.0 --port 5173",
   "build": "vite build",
-  "preview": "vite preview --host 0.0.0.0 --port 3000",
+  "preview": "vite preview --host 0.0.0.0 --port 5173",
   "lint": "eslint .",
-  "test": "vitest run --ci"
+  "test": "vitest run"
 },
   "dependencies": {
     "@sveltejs/kit": "2.49.2",

@@ -1,8 +1,5 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 
 export default {
-  plugins: [sveltekit()],
-  server: {
-    middlewareMode: true
-  }
+  plugins: [sveltekit()]
 };
