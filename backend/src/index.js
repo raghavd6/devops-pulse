@@ -14,6 +14,14 @@ app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
 // --- routes ---
+app.get('/', (_req, res) => {
+  res.json({
+    message: 'DevOps Pulse API',
+    health: '/api/health',
+    notes: '/api/notes'
+  });
+});
+
 app.get('/api/health', async (_req, res) => {
   res.json({
     status: 'ok',
