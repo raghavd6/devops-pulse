@@ -10,7 +10,7 @@
   "build": "vite build",
   "preview": "vite preview --host 0.0.0.0 --port 3000",
   "lint": "eslint .",
-  "test": "vitest run"
+  "test": "vitest run --ci"
 },
   "dependencies": {
     "@sveltejs/kit": "2.49.2",
