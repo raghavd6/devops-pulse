@@ -1,0 +1,10 @@
+{
+  "ParameterOverrides": {
+    "KeyName": "devops-pulse-key",
+    "InstanceType": "t3.micro",
+    "RepoUrl": "https://github.com/raghavd6/devops-pulse.git",
+    "Branch": "main",
+    "ComposePath": "docker-compose.yml",
+    "AppHttpPort": 80
+  }
+}

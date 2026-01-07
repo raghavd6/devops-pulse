@@ -1,0 +1,44 @@
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=devopspulse
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d devopspulse || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/devopspulse
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+
+  web:
+    build:
+      context: ./frontend
+    environment:
+      - ORIGIN=http://localhost:5173
+      - PORT=3000
+      - VITE_API_URL=http://localhost:3000
+    depends_on:
+      - api
+    ports:
+      - "5173:3000"
+
+volumes:
+  pg_data:

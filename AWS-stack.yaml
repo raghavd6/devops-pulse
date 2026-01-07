@@ -1,0 +1,52 @@
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Minimal EC2 + SG using user-provided VPC/Subnet/AMI
+
+Parameters:
+  AmiId:
+    Type: AWS::EC2::Image::Id
+    Description: AMI ID for Amazon Linux 2023 (from EC2 > AMIs in your region)
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: Target VPC ID (use default VPC if your lab allows)
+
+  PublicSubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Description: Public subnet ID within the chosen VPC
+
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: Existing EC2 Key Pair name (for SSH). Create via Console if allowed.
+
+  InstanceType:
+    Type: String
+    Default: t3.micro
+    AllowedValues: [t3.micro, t3.small, t3.medium]
+
+Resources:
+  AppSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow HTTP from anywhere
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  Ec2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref AmiId
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      SubnetId: !Ref PublicSubnetId
+      SecurityGroupIds:
+        - !Ref AppSecurityGroup
+
+Outputs:
+  Ec2PublicDNS:
+    Description: Public DNS of the instance
+    Value: !GetAtt Ec2Instance.PublicDnsName

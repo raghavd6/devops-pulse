@@ -1,0 +1,31 @@
+
+name: ci-cd
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci && npm test
+      # Optional: lint frontend (Vitest) and backend (Jest/Supertest) already in your app
+
+  validate_iac:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install cfn-lint and yamllint
+        run: |
+          pip install cfn-lint==0.85.2 yamllint==1.32.0
+      - name: Validate CloudFormation template
+        run: |
+          yamllint infra/cloudformation/devops-pulse-ec2.yaml
+          cfn-lint infra/cloudformation/devops-pulse-ec2.yaml
+      - name: Render would-be deploy command (dry-run doc)
+        run: |
+          echo "aws cloudformation deploy --stack-name devops-pulse --region eu-west-2 \\"
+          echo "  --template-file infra/cloudformation/devops-pulse-ec2.yaml \\"
+          echo "  --parameter-overrides $(jq -r '.ParameterOverrides | to_entries | map(\"\\(.key)=\\(.value)\") | join(\" \")' infra/cloudformation/parameters.json) \\"
+          echo "  --capabilities CAPABILITY_NAMED_IAM"
