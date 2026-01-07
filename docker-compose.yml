@@ -16,29 +16,39 @@ services:
       timeout: 5s
       retries: 10
 
-  api:
+  backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile
+    container_name: devops-pulse-backend
     environment:
       - PORT=3000
       - DATABASE_URL=postgres://postgres:postgres@postgres:5432/devopspulse
+      - NODE_ENV=development
     depends_on:
       postgres:
         condition: service_healthy
     ports:
       - "3000:3000"
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/test:/app/test
 
-  web:
+  frontend:
     build:
       context: ./frontend
+      dockerfile: Dockerfile
+    container_name: devops-pulse-frontend
     environment:
       - ORIGIN=http://localhost:5173
-      - PORT=3000
+      - PORT=5173
       - VITE_API_URL=http://localhost:3000
     depends_on:
-      - api
+      - backend
     ports:
-      - "5173:3000"
+      - "5173:5173"
+    volumes:
+      - ./frontend/src:/app/src
 
 volumes:
   pg_data:
